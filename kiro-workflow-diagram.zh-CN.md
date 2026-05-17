@@ -210,7 +210,7 @@ AGENTS.md 檔案永遠載入，不支援 inclusion 模式。可放置於：
 
 ## Hook 清單（兩個 Repo）
 
-### Phase-Based SDLC（10 個 hooks）
+### Phase-Based SDLC（16 個 hooks）
 
 | Hook | 觸發條件 | 動作 | 可阻擋？ |
 |------|---------|------|---------|
@@ -224,8 +224,14 @@ AGENTS.md 檔案永遠載入，不支援 inclusion 模式。可放置於：
 | Test Coverage Gate | Post Task Execution | Shell | 否 |
 | Post-Batch Sync | Agent Stop | Shell | 否 |
 | Prompt Scope Audit | Agent Stop | Shell | 否 |
+| PII Detection Guard | Pre Tool Use (write) | Shell | 是 |
+| DLP Guard | Pre Tool Use (write) | Shell | 是 |
+| Data Classification Guard | Pre Tool Use (write) | Shell | 是 |
+| Cross-Border Data Guard | Pre Tool Use (write) | Shell | 是 |
+| Audit Trail Check | Post Tool Use (write) | Agent Prompt | 否 |
+| Prompt Security Guard | Prompt Submit | Shell | 是 |
 
-### Sprint-Based DevSecOps（10 個 hooks）
+### Sprint-Based DevSecOps（16 個 hooks）
 
 | Hook | 觸發條件 | 動作 | 可阻擋？ |
 |------|---------|------|---------|
@@ -239,6 +245,12 @@ AGENTS.md 檔案永遠載入，不支援 inclusion 模式。可放置於：
 | Test Coverage Gate | Post Task Execution | Shell | 否 |
 | Sprint Status Sync | Agent Stop | Shell | 否 |
 | Prompt Scope Audit | Agent Stop | Shell | 否 |
+| PII Detection Guard | Pre Tool Use (write) | Shell | 是 |
+| DLP Guard | Pre Tool Use (write) | Shell | 是 |
+| Data Classification Guard | Pre Tool Use (write) | Shell | 是 |
+| Cross-Border Data Guard | Pre Tool Use (write) | Shell | 是 |
+| Audit Trail Check | Post Tool Use (write) | Agent Prompt | 否 |
+| Prompt Security Guard | Prompt Submit | Shell | 是 |
 
 ## Pre/Post Tool Use Hook 的工具匹配模式
 
@@ -264,5 +276,5 @@ AGENTS.md 檔案永遠載入，不支援 inclusion 模式。可放置於：
 | [kiro.dev/docs/hooks/actions](https://kiro.dev/docs/hooks/actions/) | 2026-03-29 | Shell 阻擋（nonzero exit）、askAgent 費用、Prompt Submit "Add to prompt" |
 | [kiro.dev/docs/chat/subagents](https://kiro.dev/docs/chat/subagents/) | 2026-03-29 | 繼承表、includeMcpJson/includePowers 預設值、無 Specs/Hooks |
 | [Issue #1 測試報告](https://github.com/timwukp/Kiro-SDLC-Scrum-best-practics/issues/1) | 2026-03-29 | KF-001~005、BF-001、SEC-SCAN-001、934 條斷言、96.47% 通過率 |
-| phase-based-sdlc repo | 2026-03-29 | 13 steering、14 agents、15 skills、10 hooks、8 scripts |
-| sprint-based-devsecops repo | 2026-03-29 | 17 steering、15 agents、14 skills、10 hooks、7 scripts |
+| phase-based-sdlc repo | 2026-03-29 | 14 steering、14 agents、15 skills、16 hooks、13 scripts |
+| sprint-based-devsecops repo | 2026-03-29 | 18 steering、15 agents、17 skills、16 hooks、12 scripts |

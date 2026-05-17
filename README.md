@@ -32,11 +32,11 @@ Phase-based SDLC approach organized by 14 roles across 5 phases.
 
 | Element | Count | Highlights |
 |---------|-------|-----------|
-| Steering | 13 | Role-based: BA, Architect, Frontend, Backend, QA, DevOps, SRE, DBA |
+| Steering | 14 | Role-based: BA, Architect, Frontend, Backend, QA, DevOps, SRE, DBA |
 | Subagents | 14 | One per SDLC role (requirements-validator, backend-builder, test-runner, etc.) |
 | Skills | 15 | requirements-gathering, sprint-planning, code-standards, threat-modeling, deployment-checklist |
-| Hooks | 10 | Credential guard, prod write lock, DB write guard, coding standards, data residency guard, scope audit |
-| Scripts | 8 | Shell scripts for deterministic enforcement |
+| Hooks | 16 | Credential guard, prod write lock, DB write guard, coding standards, data residency guard, scope audit + PII detection, DLP guard, data classification, cross-border data, audit trail, prompt security |
+| Scripts | 13 | Shell scripts for deterministic enforcement including security enforcement scripts |
 | Compliance Docs | 7 | DR plan, pen testing, vendor risk register, board reporting, SIEM, threat modeling process |
 
 ### [sprint-based-devsecops-kiro-best-practices/](./sprint-based-devsecops-kiro-best-practices/)
@@ -44,11 +44,11 @@ DevSecOps + Scrum approach with Agentic AI as Digital Teammate.
 
 | Element | Count | Highlights |
 |---------|-------|-----------|
-| Steering | 17 | Scrum Guide principles + DevSecOps: Three Pillars, Sprint Goal crafting, INVEST, Kanban flow metrics, Scrum Master 6 stances, Zombie Scrum anti-patterns, UX dual-track |
+| Steering | 18 | Scrum Guide principles + DevSecOps: Three Pillars, Sprint Goal crafting, INVEST, Kanban flow metrics, Scrum Master 6 stances, Zombie Scrum anti-patterns, UX dual-track |
 | Subagents | 15 | Scrum-specific: security-champion, threat-modeler, pipeline-builder + security-aware code-reviewer |
-| Skills | 14 | threat-modeling, security-story-writing, chaos-security-testing, sprint-security-review, retro-pipeline-review |
-| Hooks | 10 | Same enforcement + Security Self-Heal Check, data residency guard, scope audit |
-| Scripts | 7 | Shell scripts for deterministic enforcement |
+| Skills | 17 | threat-modeling, security-story-writing, chaos-security-testing, sprint-security-review, retro-pipeline-review |
+| Hooks | 16 | Same enforcement + Security Self-Heal Check, data residency guard, scope audit + PII detection, DLP guard, data classification, cross-border data, audit trail, prompt security |
+| Scripts | 12 | Shell scripts for deterministic enforcement including security enforcement scripts |
 | Compliance Docs | 6 | DR plan, pen testing, vendor risk register, board reporting, SIEM integration |
 
 ## What They Share (Same Banking Context)
@@ -60,6 +60,21 @@ Both configurations use the same enterprise application context (banking example
 - Credential leak prevention (AWS Secrets Manager enforced)
 - Database mutation guard (Flyway migrations only)
 - BigDecimal for money, audit logging, input validation
+
+## Enterprise Security & Governance Hooks
+
+Both configurations include 6 enterprise-grade security hooks that enforce Singapore's regulatory requirements at the IDE level:
+
+| Hook | Purpose | Trigger | Compliance |
+|------|---------|---------|------------|
+| **PII Detection Guard** | Block hardcoded personal data (NRIC, credit cards, phone, email, passport) | Pre Tool Use (write) | PDPA, MAS TRM |
+| **DLP Guard** | Prevent data leakage through logging, unfiltered API responses, external calls | Pre Tool Use (write) | PDPA, PCI-DSS |
+| **Data Classification Guard** | Enforce classification headers (@classification) in sensitive source directories | Pre Tool Use (write) | MAS TRM |
+| **Cross-Border Data Guard** | Block non-Singapore AWS regions in application code for data residency | Pre Tool Use (write) | PDPA |
+| **Audit Trail Check** | Advisory check ensuring audit logging for write operations | Post Tool Use (write) | MAS TRM, SOX |
+| **Prompt Security Guard** | Block prompts attempting to bypass security controls or disable hooks | Prompt Submit | MAS TRM |
+
+These hooks are **deterministic** (Shell Command action), **zero-cost** (no AI credits), and **cannot be bypassed** by the AI agent. They complement the existing enforcement hooks (credential guard, prod write lock, DB write guard, data residency guard).
 
 ## Kiro Five-Element Architecture
 

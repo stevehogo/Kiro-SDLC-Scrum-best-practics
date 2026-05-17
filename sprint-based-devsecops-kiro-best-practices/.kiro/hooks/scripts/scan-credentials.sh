@@ -1,6 +1,9 @@
-#!/bin/bash
-# Hook: Credential Guard | Trigger: Pre Tool Use (write)
-# Exit code: non-zero = BLOCK
+#!/usr/bin/env bash
+# Hook: Credential Guard
+# Trigger: Pre Tool Use (write)
+# Purpose: Block writes containing hardcoded credentials
+# Exit code: 0 = pass (allow), non-zero = block
+set -euo pipefail
 
 TOOL_INPUT=$(cat)
 

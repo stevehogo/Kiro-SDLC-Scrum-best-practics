@@ -1,0 +1,323 @@
+# ===========================================================================
+# DevSecOps Pipeline Template - Prerequisites
+# ===========================================================================
+# This is a TEMPLATE workflow. Before using it, the adopting team must set up:
+#
+# 1. Dockerfile        - Required by the container-scan job to build the image.
+# 2. Gradle plugins    - The build.gradle must apply:
+#                        - 'org.sonarqube' plugin (for ./gradlew sonar)
+#                        - 'jacoco' plugin with jacocoTestCoverageVerification
+#                          task configured with minimum coverage thresholds.
+# 3. .zap/rules.tsv    - OWASP ZAP rules file defining scan policy (alert
+#                        thresholds per rule ID). See ZAP docs for format.
+# 4. .snyk             - (Optional) Snyk policy file for ignoring/overriding
+#                        specific vulnerability findings.
+# 5. GitHub Secrets    - The following secrets must be configured in the repo:
+#                        - SONAR_TOKEN, SONAR_HOST_URL (SonarQube)
+#                        - SNYK_TOKEN (Snyk dependency/container scanning)
+#                        - AWS_STAGING_ROLE_ARN (staging deploy OIDC role)
+#                        - AWS_PRODUCTION_ROLE_ARN (production deploy OIDC role)
+#                        - ALB_LISTENER_ARN (production ALB listener)
+#                        - GREEN_TARGET_GROUP_ARN (blue/green target group)
+# 6. GitHub Environments - 'staging' and 'production' environments with
+#                          appropriate protection rules (required reviewers).
+# ===========================================================================
+
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  JAVA_VERSION: '17'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build application
+        run: ./gradlew build -x test
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/libs/*.jar
+
+  sast:
+    name: SAST (SonarQube)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          ./gradlew sonar \
+            -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }} \
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+            -Dsonar.token=${{ env.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true
+
+      - name: Check Quality Gate
+        run: |
+          echo "SonarQube Quality Gate must pass - pipeline fails on Critical/High findings"
+          echo "Security hotspots must be reviewed before merge"
+
+  dependency-scan:
+    name: Dependency Vulnerability Scan (Snyk)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/gradle@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --policy-path=.snyk
+
+      - name: Upload Snyk results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Run unit tests with coverage
+        run: ./gradlew test jacocoTestReport
+
+      - name: Check coverage thresholds
+        run: ./gradlew jacocoTestCoverageVerification
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/reports/jacoco/
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Run integration tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+          SPRING_DATASOURCE_USERNAME: testuser
+          SPRING_DATASOURCE_PASSWORD: testpass
+        run: ./gradlew integrationTest
+
+  container-scan:
+    name: Container Image Scan (Snyk Container)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/libs/
+
+      - name: Build container image
+        run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Run Snyk Container scan
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          args: --severity-threshold=high
+
+      - name: Check for secrets in image layers
+        run: |
+          docker history --no-trunc ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} | \
+            grep -iE '(password|secret|key|token)' && exit 1 || echo "No secrets found in layers"
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, sast, dependency-scan, unit-tests]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.bank-app.internal
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/libs/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_STAGING_ROLE_ARN }}
+          aws-region: ap-southeast-1
+
+      - name: Deploy to ECS Staging
+        run: |
+          aws ecs update-service \
+            --cluster banking-staging \
+            --service transfer-api \
+            --force-new-deployment
+
+      - name: Wait for deployment stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster banking-staging \
+            --services transfer-api
+
+      - name: Run smoke tests
+        run: |
+          curl -sf https://staging.bank-app.internal/actuator/health || exit 1
+          echo "Staging deployment healthy"
+
+  dast:
+    name: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OWASP ZAP full scan
+        uses: zaproxy/action-full-scan@v0.10.0
+        with:
+          target: 'https://staging.bank-app.internal'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -j -l WARN'
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-report
+          path: report_html.html
+
+      - name: Check for High/Critical findings
+        run: |
+          if grep -q 'High\|Critical' zap-report.json 2>/dev/null; then
+            echo "DAST found High/Critical vulnerabilities - blocking production deployment"
+            exit 1
+          fi
+
+  deploy-production:
+    name: Deploy to Production (Blue/Green)
+    runs-on: ubuntu-latest
+    needs: [integration-tests, dast, container-scan]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.bank-app.sg
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_PRODUCTION_ROLE_ARN }}
+          aws-region: ap-southeast-1
+
+      - name: Deploy Green environment
+        run: |
+          aws ecs update-service \
+            --cluster banking-production \
+            --service transfer-api-green \
+            --force-new-deployment
+
+      - name: Wait for Green stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster banking-production \
+            --services transfer-api-green
+
+      - name: Run production smoke tests against Green
+        run: |
+          curl -sf https://green.bank-app.sg/actuator/health || exit 1
+          echo "Green deployment healthy"
+
+      - name: Switch traffic to Green (Blue/Green cutover)
+        run: |
+          aws elbv2 modify-listener \
+            --listener-arn ${{ secrets.ALB_LISTENER_ARN }} \
+            --default-actions Type=forward,TargetGroupArn=${{ secrets.GREEN_TARGET_GROUP_ARN }}
+
+      - name: Verify production health
+        run: |
+          sleep 30
+          curl -sf https://api.bank-app.sg/actuator/health || exit 1
+          echo "Production deployment successful"
+
+      - name: Tag release
+        run: |
+          git tag "release-$(date +%Y%m%d-%H%M%S)"
+          git push origin --tags

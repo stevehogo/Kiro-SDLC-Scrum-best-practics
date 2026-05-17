@@ -59,6 +59,27 @@
         "search_vulnerabilities"
       ],
       "disabled": false
+    },
+    "aurora-dsql": {
+      "command": "npx",
+      "args": ["-y", "@aws/dsql-mcp-server@latest"],
+      "env": {
+        "AWS_REGION": "${AWS_REGION}",
+        "DSQL_ENDPOINT": "${DSQL_ENDPOINT}"
+      },
+      "autoApprove": ["query", "describe_table", "list_tables"],
+      "disabled": false
+    },
+    "datadog": {
+      "command": "npx",
+      "args": ["-y", "@datadog/mcp-server@latest"],
+      "env": {
+        "DATADOG_API_KEY": "${DATADOG_API_KEY}",
+        "DATADOG_APP_KEY": "${DATADOG_APP_KEY}",
+        "DATADOG_SITE": "${DATADOG_SITE}"
+      },
+      "autoApprove": ["get_metrics", "list_monitors", "get_logs", "get_traces"],
+      "disabled": false
     }
   }
 }

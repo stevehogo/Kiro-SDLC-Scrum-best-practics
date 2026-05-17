@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Data Classification Guard",
+  "description": "Ensure source files in sensitive directories have proper data classification headers per MAS TRM requirements.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": ".kiro/hooks/scripts/check-data-classification.sh"
+  }
+}

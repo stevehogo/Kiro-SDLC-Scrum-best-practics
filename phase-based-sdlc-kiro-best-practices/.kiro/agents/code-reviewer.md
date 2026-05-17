@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Performs thorough code review for correctness, performance, security, and banking standards compliance
 tools: ["read", "@snyk"]
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

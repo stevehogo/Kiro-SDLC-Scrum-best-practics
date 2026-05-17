@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Audit Trail Completeness Check",
+  "description": "After writing state-changing code, verify audit logging is present per MAS TRM requirements.",
+  "version": "1",
+  "when": {
+    "type": "postToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the code that was just written. If it contains state-changing operations (create, update, delete, transfer, approve, reject, login, logout, permission changes), verify that proper audit trail logging is included. Required audit fields per MAS TRM: who (userId/serviceId), what (action performed), when (timestamp), where (service/endpoint), before-state, after-state. If audit logging is missing for state-changing operations, recommend adding it with specific code examples. If the code is read-only or non-state-changing, confirm with 'Audit check: N/A - no state changes detected.'"
+  }
+}

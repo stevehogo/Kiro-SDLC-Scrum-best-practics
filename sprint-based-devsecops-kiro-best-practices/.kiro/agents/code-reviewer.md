@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Performs security-first code review for correctness, OWASP compliance, and banking standards
 tools: ["read", "@snyk"]
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

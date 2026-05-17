@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Cross-Border Data Guard",
+  "description": "PDPA compliance check for application code - detect non-Singapore AWS regions in SDK configurations and flag potential cross-border data transfers.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": ".kiro/hooks/scripts/check-cross-border.sh"
+  }
+}

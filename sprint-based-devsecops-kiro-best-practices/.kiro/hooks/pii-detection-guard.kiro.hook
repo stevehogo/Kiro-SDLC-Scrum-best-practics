@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "PII Detection Guard",
+  "description": "Block file writes containing hardcoded PII (NRIC, credit cards, emails, phone numbers). Prevents accidental data exposure in source code.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": ".kiro/hooks/scripts/detect-pii.sh"
+  }
+}

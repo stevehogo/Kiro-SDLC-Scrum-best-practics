@@ -1,15 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook: Credential Guard
 # Trigger: Pre Tool Use (write)
 # Purpose: Block writes containing hardcoded credentials
-# Exit code: non-zero = BLOCK the write operation
+# Exit code: 0 = pass (allow), non-zero = block
+set -euo pipefail
 
 TOOL_INPUT=$(cat)
 
 # Extract content being written
-CONTENT=$(echo "$TOOL_INPUT" | grep -oE '"text"\s*:\s*"[^"]*"' | head -1)
+CONTENT=$(echo "$TOOL_INPUT" | grep -oE '"text"\s*:\s*"[^"]*"' | head -1 || true)
 if [ -z "$CONTENT" ]; then
-  CONTENT=$(echo "$TOOL_INPUT" | grep -oE '"content"\s*:\s*"[^"]*"' | head -1)
+  CONTENT=$(echo "$TOOL_INPUT" | grep -oE '"content"\s*:\s*"[^"]*"' | head -1 || true)
 fi
 
 # Patterns that indicate hardcoded credentials

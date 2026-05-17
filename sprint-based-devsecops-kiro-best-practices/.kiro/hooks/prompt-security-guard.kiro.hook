@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Prompt Security Guard",
+  "description": "Block prompts that attempt to bypass security controls, disable hooks, or skip compliance checks.",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": ".kiro/hooks/scripts/check-prompt-security.sh"
+  }
+}

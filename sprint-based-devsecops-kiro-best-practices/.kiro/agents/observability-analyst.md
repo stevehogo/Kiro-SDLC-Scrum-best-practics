@@ -3,6 +3,7 @@ name: observability-analyst
 description: Analyzes monitoring data, security anomalies, and SLO metrics for banking system resilience
 tools: ["read"]
 includePowers: true
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook: DB Write Guard
 # Trigger: Pre Tool Use (shell, @aurora-dsql)
 # Purpose: Block dangerous SQL mutation statements
-# Exit code: non-zero = BLOCK the operation
+# Exit code: 0 = pass (allow), non-zero = block
+set -euo pipefail
 
 TOOL_INPUT=$(cat)
 

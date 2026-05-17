@@ -1,6 +1,9 @@
-#!/bin/bash
-# Hook: Coverage Gate | Trigger: Post Task Execution
-# Checks test coverage and security regression tests
+#!/usr/bin/env bash
+# Hook: Coverage Gate
+# Trigger: postTaskExecution
+# Purpose: Check test coverage and security regression tests
+# Exit code: 0 = pass, non-zero = warn (postTaskExecution hooks log warning)
+set -euo pipefail
 
 echo "Running test coverage + security regression check..."
 
@@ -8,8 +11,8 @@ if [ -f "gradlew" ]; then
   ./gradlew test jacocoTestReport 2>&1
   COVERAGE_FILE="build/reports/jacoco/test/jacocoTestReport.xml"
   if [ -f "$COVERAGE_FILE" ]; then
-    LINE_MISSED=$(grep -oP 'type="LINE".*?missed="\K[0-9]+' "$COVERAGE_FILE" | head -1)
-    LINE_COVERED=$(grep -oP 'type="LINE".*?covered="\K[0-9]+' "$COVERAGE_FILE" | head -1)
+    LINE_MISSED=$(grep -oP 'type="LINE".*?missed="\K[0-9]+' "$COVERAGE_FILE" | head -1 || true)
+    LINE_COVERED=$(grep -oP 'type="LINE".*?covered="\K[0-9]+' "$COVERAGE_FILE" | head -1 || true)
     if [ -n "$LINE_MISSED" ] && [ -n "$LINE_COVERED" ]; then
       TOTAL=$((LINE_MISSED + LINE_COVERED))
       if [ "$TOTAL" -gt 0 ]; then

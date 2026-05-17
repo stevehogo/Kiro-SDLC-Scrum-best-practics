@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook: Data Residency Guard
 # Trigger: Pre Tool Use (write)
 # Purpose: Ensure CDK/infra writes use ap-southeast-1 for customer data resources
-# MAS TRM: Customer data must remain in Singapore region
-# Exit code: non-zero = BLOCK
+# Exit code: 0 = pass (allow), non-zero = block
+set -euo pipefail
 
 TOOL_INPUT=$(cat)
 
@@ -23,7 +23,7 @@ fi
 FILE_CONTENT=$(echo "$TOOL_INPUT" | grep -oE '"(text|content)"\s*:\s*"[^"]*"' | head -1)
 
 # Check for non-Singapore regions in data-storing resources
-NON_SG_REGIONS=$(echo "$FILE_CONTENT" | grep -oE '(us-east-1|us-west-2|eu-west-1|eu-central-1|ap-northeast-1|ap-south-1)' | head -1)
+NON_SG_REGIONS=$(echo "$FILE_CONTENT" | grep -oE '(us-east-1|us-west-2|eu-west-1|eu-central-1|ap-northeast-1|ap-south-1)' | head -1 || true)
 
 if [ -n "$NON_SG_REGIONS" ]; then
   # Check if it's a data-storing resource (RDS, DynamoDB, S3, ElastiCache, MSK)

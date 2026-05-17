@@ -1,6 +1,9 @@
-#!/bin/bash
-# Hook: Block Prod Writes | Trigger: Pre Tool Use (write)
-# Exit code: non-zero = BLOCK
+#!/usr/bin/env bash
+# Hook: Block Prod Writes
+# Trigger: Pre Tool Use (write)
+# Purpose: Prevent agent from writing to production-protected paths
+# Exit code: 0 = pass (allow), non-zero = block
+set -euo pipefail
 
 PROTECTED_PATHS=(
   "config/prod/"

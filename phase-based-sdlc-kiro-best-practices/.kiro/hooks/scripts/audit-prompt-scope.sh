@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook: Prompt Scope Audit
 # Trigger: agentStop
 # Purpose: Log prompt topics for scope compliance auditing
-# Non-blocking — audit only, does not prevent execution
+# Exit code: 0 = audit only, never blocks
+set -euo pipefail
 
 AUDIT_LOG=".kiro/hooks/logs/scope-audit.log"
 mkdir -p "$(dirname "$AUDIT_LOG")"

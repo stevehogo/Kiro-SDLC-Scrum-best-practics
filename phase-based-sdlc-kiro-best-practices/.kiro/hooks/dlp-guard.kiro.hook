@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "DLP Guard",
+  "description": "Prevent sensitive data leakage to logs, API responses, and external endpoints. Enforces data loss prevention controls per MAS TRM.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": ".kiro/hooks/scripts/check-dlp.sh"
+  }
+}

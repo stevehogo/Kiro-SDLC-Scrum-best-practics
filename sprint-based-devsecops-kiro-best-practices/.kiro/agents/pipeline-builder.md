@@ -3,6 +3,7 @@ name: pipeline-builder
 description: Builds and optimizes CI/CD DevSecOps pipelines with automated security gates, SAST, DAST, and container scanning
 tools: ["read", "write", "shell"]
 includePowers: true
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

@@ -3,6 +3,7 @@ name: infra-builder
 description: Builds and reviews AWS CDK infrastructure code for banking environments
 tools: ["read", "write", "shell"]
 includePowers: true
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

@@ -54,14 +54,17 @@ if echo "$FILE_CONTENT" | grep -qE "['\"][^'\"]*\+65\s?[0-9]{4}\s?[0-9]{4}[^'\"]
 fi
 
 # Passport numbers: letter followed by 7-8 digits in string literals
-if echo "$FILE_CONTENT" | grep -qE "['\"][^'\"]*[A-Z][0-9]{7,8}[^'\"]*['\"]"; then
-  # Avoid false positives by requiring it not to look like NRIC (already caught above)
-  # and not matching common identifiers
-  if echo "$FILE_CONTENT" | grep -E "['\"][^'\"]*[A-Z][0-9]{7,8}[^'\"]*['\"]" | grep -qvE "[STFG][0-9]{7}[A-Z]"; then
-    echo "BLOCKED: Possible hardcoded passport number detected."
-    echo "Pattern: [A-Z][0-9]{7,8}"
-    echo "Use secure vault storage for identity documents."
-    BLOCKED=1
+# Only flag when "passport" context is nearby (variable name, field name, or comment)
+# to avoid false positives on version strings, constants, and reference codes.
+if echo "$FILE_CONTENT" | grep -qiE "(passport|travel_doc|travel_document)" ; then
+  if echo "$FILE_CONTENT" | grep -qE "['\"][^'\"]*[A-Z][0-9]{7,8}[^'\"]*['\"]"; then
+    # Avoid false positives by requiring it not to look like NRIC (already caught above)
+    if echo "$FILE_CONTENT" | grep -E "['\"][^'\"]*[A-Z][0-9]{7,8}[^'\"]*['\"]" | grep -qvE "[STFG][0-9]{7}[A-Z]"; then
+      echo "BLOCKED: Possible hardcoded passport number detected."
+      echo "Pattern: [A-Z][0-9]{7,8} in passport-related context"
+      echo "Use secure vault storage for identity documents."
+      BLOCKED=1
+    fi
   fi
 fi
 

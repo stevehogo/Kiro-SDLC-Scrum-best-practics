@@ -1,3 +1,28 @@
+# ===========================================================================
+# DevSecOps Pipeline Template - Prerequisites
+# ===========================================================================
+# This is a TEMPLATE workflow. Before using it, the adopting team must set up:
+#
+# 1. Dockerfile        - Required by the container-scan job to build the image.
+# 2. Gradle plugins    - The build.gradle must apply:
+#                        - 'org.sonarqube' plugin (for ./gradlew sonar)
+#                        - 'jacoco' plugin with jacocoTestCoverageVerification
+#                          task configured with minimum coverage thresholds.
+# 3. .zap/rules.tsv    - OWASP ZAP rules file defining scan policy (alert
+#                        thresholds per rule ID). See ZAP docs for format.
+# 4. .snyk             - (Optional) Snyk policy file for ignoring/overriding
+#                        specific vulnerability findings.
+# 5. GitHub Secrets    - The following secrets must be configured in the repo:
+#                        - SONAR_TOKEN, SONAR_HOST_URL (SonarQube)
+#                        - SNYK_TOKEN (Snyk dependency/container scanning)
+#                        - AWS_STAGING_ROLE_ARN (staging deploy OIDC role)
+#                        - AWS_PRODUCTION_ROLE_ARN (production deploy OIDC role)
+#                        - ALB_LISTENER_ARN (production ALB listener)
+#                        - GREEN_TARGET_GROUP_ARN (blue/green target group)
+# 6. GitHub Environments - 'staging' and 'production' environments with
+#                          appropriate protection rules (required reviewers).
+# ===========================================================================
+
 name: DevSecOps Pipeline
 
 on:

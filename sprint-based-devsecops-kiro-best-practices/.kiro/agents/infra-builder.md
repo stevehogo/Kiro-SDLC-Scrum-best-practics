@@ -3,6 +3,7 @@ name: infra-builder
 description: Builds secure AWS CDK infrastructure with Zero Trust networking and automated security controls
 tools: ["read", "write", "shell"]
 includePowers: true
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

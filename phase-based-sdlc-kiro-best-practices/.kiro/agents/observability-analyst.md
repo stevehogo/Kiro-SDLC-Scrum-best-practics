@@ -3,6 +3,7 @@ name: observability-analyst
 description: Analyzes monitoring data, logs, and metrics for banking system reliability
 tools: ["read"]
 includePowers: true
+includeMcpJson: true
 model: claude-sonnet-4
 ---
 

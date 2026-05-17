@@ -32,11 +32,11 @@
 
 | 元素 | 數量 | 重點 |
 |------|------|------|
-| Steering | 13 | 按角色：BA、架構師、前端、後端、QA、DevOps、SRE、DBA |
+| Steering | 14 | 按角色：BA、架構師、前端、後端、QA、DevOps、SRE、DBA |
 | Subagents | 14 | 每個 SDLC 角色一個（requirements-validator、backend-builder、test-runner 等） |
 | Skills | 15 | requirements-gathering、sprint-planning、code-standards、threat-modeling、deployment-checklist |
-| Hooks | 10 | 憑證防護、生產環境寫入鎖定、DB 寫入防護、編碼標準、資料駐留防護、範圍審計 |
-| Scripts | 8 | 用於確定性執行的 Shell 腳本 |
+| Hooks | 16 | 憑證防護、生產環境寫入鎖定、DB 寫入防護、編碼標準、資料駐留防護、範圍審計 + PII 偵測、DLP 防護、資料分類、跨境資料、審計軌跡、prompt 安全 |
+| Scripts | 13 | 用於確定性執行的 Shell 腳本，包含安全執行腳本 |
 | 合規文件 | 7 | DR 計劃、滲透測試、供應商風險登記、董事會報告、SIEM、威脅建模流程 |
 
 ### [sprint-based-devsecops-kiro-best-practices/](./sprint-based-devsecops-kiro-best-practices/)
@@ -44,11 +44,11 @@ DevSecOps + Scrum 方法，AI 作為數位隊友。
 
 | 元素 | 數量 | 重點 |
 |------|------|------|
-| Steering | 17 | Scrum 指南原則 + DevSecOps：三大支柱、衝刺目標制定、INVEST、看板流量指標、Scrum Master 六種姿態、殭屍 Scrum 反模式、UX 雙軌 |
+| Steering | 18 | Scrum 指南原則 + DevSecOps：三大支柱、衝刺目標制定、INVEST、看板流量指標、Scrum Master 六種姿態、殭屍 Scrum 反模式、UX 雙軌 |
 | Subagents | 15 | Scrum 專用：security-champion、threat-modeler、pipeline-builder + 安全感知 code-reviewer |
-| Skills | 14 | threat-modeling、security-story-writing、chaos-security-testing、sprint-security-review、retro-pipeline-review |
-| Hooks | 10 | 相同執行機制 + Security Self-Heal Check、資料駐留防護、範圍審計 |
-| Scripts | 7 | 用於確定性執行的 Shell 腳本 |
+| Skills | 17 | threat-modeling、security-story-writing、chaos-security-testing、sprint-security-review、retro-pipeline-review |
+| Hooks | 16 | 相同執行機制 + Security Self-Heal Check、資料駐留防護、範圍審計 + PII 偵測、DLP 防護、資料分類、跨境資料、審計軌跡、prompt 安全 |
+| Scripts | 12 | 用於確定性執行的 Shell 腳本，包含安全執行腳本 |
 | 合規文件 | 6 | DR 計劃、滲透測試、供應商風險登記、董事會報告、SIEM 整合 |
 
 ## 共用內容（相同的企業應用場景，以銀行為範例）
@@ -60,6 +60,21 @@ DevSecOps + Scrum 方法，AI 作為數位隊友。
 - 憑證洩漏防護（強制使用 AWS Secrets Manager）
 - 資料庫變更防護（僅限 Flyway 遷移）
 - 金額使用 BigDecimal、審計日誌、輸入驗證
+
+## 企業安全與治理 Hooks
+
+兩套配置均包含 6 個企業級安全 hooks，在 IDE 層面執行新加坡的法規要求：
+
+| Hook | 用途 | 觸發條件 | 合規標準 |
+|------|------|---------|----------|
+| **PII 偵測防護** | 阻擋硬編碼的個人資料（NRIC、信用卡、電話、電子郵件、護照） | Pre Tool Use (write) | PDPA、MAS TRM |
+| **DLP 防護** | 防止資料透過日誌、未過濾的 API 回應、外部呼叫洩漏 | Pre Tool Use (write) | PDPA、PCI-DSS |
+| **資料分類防護** | 在敏感原始碼目錄中強制要求分類標頭（@classification） | Pre Tool Use (write) | MAS TRM |
+| **跨境資料防護** | 阻擋應用程式碼中非新加坡的 AWS 區域，確保資料駐留 | Pre Tool Use (write) | PDPA |
+| **審計軌跡檢查** | 建議性檢查，確保寫入操作有審計日誌 | Post Tool Use (write) | MAS TRM、SOX |
+| **Prompt 安全防護** | 阻擋嘗試繞過安全控制或停用 hooks 的提示 | Prompt Submit | MAS TRM |
+
+這些 hooks 是**確定性的**（Shell Command 動作）、**零成本**（不消耗 AI credits）、且 **AI agent 無法繞過**。它們與現有的執行 hooks（憑證防護、生產環境寫入鎖定、DB 寫入防護、資料駐留防護）互為補充。
 
 ## Kiro 五元素架構
 

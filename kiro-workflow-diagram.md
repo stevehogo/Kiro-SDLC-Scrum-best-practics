@@ -210,7 +210,7 @@ Source: [Official docs](https://kiro.dev/docs/steering/#agentsmd): "AGENTS.md fi
 
 ## Hook Inventory (Both Repos)
 
-### Phase-Based SDLC (10 hooks)
+### Phase-Based SDLC (16 hooks)
 
 | Hook | Trigger | Action | Blocks? |
 |------|---------|--------|---------|
@@ -224,8 +224,14 @@ Source: [Official docs](https://kiro.dev/docs/steering/#agentsmd): "AGENTS.md fi
 | Test Coverage Gate | Post Task Execution | Shell | No |
 | Post-Batch Sync | Agent Stop | Shell | No |
 | Prompt Scope Audit | Agent Stop | Shell | No |
+| PII Detection Guard | Pre Tool Use (write) | Shell | Yes |
+| DLP Guard | Pre Tool Use (write) | Shell | Yes |
+| Data Classification Guard | Pre Tool Use (write) | Shell | Yes |
+| Cross-Border Data Guard | Pre Tool Use (write) | Shell | Yes |
+| Audit Trail Check | Post Tool Use (write) | Agent Prompt | No |
+| Prompt Security Guard | Prompt Submit | Shell | Yes |
 
-### Sprint-Based DevSecOps (10 hooks)
+### Sprint-Based DevSecOps (16 hooks)
 
 | Hook | Trigger | Action | Blocks? |
 |------|---------|--------|---------|
@@ -239,6 +245,12 @@ Source: [Official docs](https://kiro.dev/docs/steering/#agentsmd): "AGENTS.md fi
 | Test Coverage Gate | Post Task Execution | Shell | No |
 | Sprint Status Sync | Agent Stop | Shell | No |
 | Prompt Scope Audit | Agent Stop | Shell | No |
+| PII Detection Guard | Pre Tool Use (write) | Shell | Yes |
+| DLP Guard | Pre Tool Use (write) | Shell | Yes |
+| Data Classification Guard | Pre Tool Use (write) | Shell | Yes |
+| Cross-Border Data Guard | Pre Tool Use (write) | Shell | Yes |
+| Audit Trail Check | Post Tool Use (write) | Agent Prompt | No |
+| Prompt Security Guard | Prompt Submit | Shell | Yes |
 
 ## Tool Matching in Pre/Post Tool Use Hooks
 
@@ -264,5 +276,5 @@ Source: [Official docs](https://kiro.dev/docs/steering/#agentsmd): "AGENTS.md fi
 | [kiro.dev/docs/hooks/actions](https://kiro.dev/docs/hooks/actions/) | 2026-03-29 | Shell blocking (nonzero exit), askAgent cost, Prompt Submit "Add to prompt" |
 | [kiro.dev/docs/chat/subagents](https://kiro.dev/docs/chat/subagents/) | 2026-03-29 | Inheritance table, includeMcpJson/includePowers defaults, no Specs/Hooks |
 | [Issue #1 test report](https://github.com/timwukp/Kiro-SDLC-Scrum-best-practics/issues/1) | 2026-03-29 | KF-001~005, BF-001, SEC-SCAN-001, 934 assertions, 96.47% pass |
-| phase-based-sdlc repo | 2026-03-29 | 13 steering, 14 agents, 15 skills, 10 hooks, 8 scripts |
-| sprint-based-devsecops repo | 2026-03-29 | 17 steering, 15 agents, 14 skills, 10 hooks, 7 scripts |
+| phase-based-sdlc repo | 2026-03-29 | 14 steering, 14 agents, 15 skills, 16 hooks, 13 scripts |
+| sprint-based-devsecops repo | 2026-03-29 | 18 steering, 15 agents, 17 skills, 16 hooks, 12 scripts |
